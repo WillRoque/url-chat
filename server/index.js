@@ -15,15 +15,14 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('a user connected');
 
-    socket.on('join room', (room) => {
+    socket.on('joinRoom', (room) => {
         console.log('socket joining room ' + room);
         socket.join(room);
     });
 
-    socket.on('chat message', (data) => {
-        console.log(data);
+    socket.on('chatMessage', (data) => {
         console.log('received message: ' + data.message);
-        io.to(data.room).emit('chat message', data.message);
+        io.to(data.room).emit('chatMessage', data.message);
     });
 
     socket.on('disconnect', () => console.log('user disconnected'));

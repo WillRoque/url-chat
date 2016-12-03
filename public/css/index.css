@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-width: 500px;
+    min-height: 500px;
+    width: 100%;
+    height: 100%;
+}
+
+#message-input {
+    position: fixed;
+    bottom: 0;
+    width: calc(100% - 50px);
+}
+
+#send {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+}
+
+#messages li {
+    background-color: lightseagreen;
+    border-radius: 10px;
+    /*display: inline-block;*/
+    float: left;
+    padding: 5px 10px 5px 10px;
+}

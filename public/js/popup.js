@@ -2,7 +2,17 @@ const socketIO = io('http://localhost:3000/');
 var tabUrl;
 
 /**
- * Get the current URL.
+ * Joins the chat room of the URL of the current tab
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  getCurrentTabUrl((url) => {
+    tabUrl = url;
+    socketIO.emit('joinRoom', url);
+  });
+});
+
+/**
+ * Gets the URL of the current active tab.
  *
  * @param {function(string)} callback - called when the URL of the current tab
  *   is found.
@@ -24,24 +34,48 @@ function getCurrentTabUrl(callback) {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  getCurrentTabUrl((url) => {
-    tabUrl = url;
-    socketIO.emit('join room', url);
-  });
-});
+/**
+ * Sends the message contained in the 'message-input' to the server
+ */
+function sendMessage() {
+  var message = document.getElementById('message-input').value;
 
-$('form').submit(function () {
-  console.log('sending message: ' + $('#m').val());
-  socketIO.emit('chat message', {
+  if (message === '') {
+    return;
+  }
+
+  console.log('sending message: ' + message);
+
+  socketIO.emit('chatMessage', {
     room: tabUrl,
-    message: $('#m').val()
+    message: message
   });
-  $('#m').val('');
-  return false;
+
+  document.getElementById('message-input').value = '';
+}
+
+/**
+ * Receives a chat message from the server
+ */
+socketIO.on('chatMessage', function (msg) {
+  console.log('receiving message: ' + msg);
+  var li = document.createElement('li');
+  li.appendChild(document.createTextNode(msg));
+  document.getElementById('messages').appendChild(li);
 });
 
-socketIO.on('chat message', function (msg) {
-  console.log('receiving message: ' + msg);
-  $('#messages').append($('<li>').text(msg));
-});
+/**
+ * Sends a chat message to the server when the user
+ * clicks on the send button
+ */
+document.getElementById('send').onclick = sendMessage;
+
+/**
+ * Sends a chat message to the server when the user
+ * presses enter in the input field
+ */
+document.getElementById('message-input').onkeypress = (event) => {
+  if (event.keyCode === 13) {
+    sendMessage();
+  }
+}
