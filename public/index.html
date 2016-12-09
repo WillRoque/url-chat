@@ -10,7 +10,10 @@
 <body>
     <ul id="messages"></ul>
 
-    <div id="message-input-wrapper"><input id="message-input" autocomplete="off"/><button id="send"></button></div>
+    <div id="message-input-wrapper">
+        <input id="message-input" type="text" placeholder="Write a message" autocomplete="off"/>
+        <button id="send"></button>
+    </div>
 
     <script src="js/socket.io-1.4.5.js"></script>
     <script src="js/jquery-1.11.1.js"></script>

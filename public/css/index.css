@@ -38,11 +38,13 @@ button {
     border-radius: 8px;
     padding: 5px 10px 5px 10px;
     margin: 0 10px 0 10px;
+    overflow-wrap: break-word;
+    max-width: 80%;
 }
 
 #messages li .my-message {
     float: right;
-    background-color: mediumspringgreen;
+    background-color: #dcf8c6;
 }
 
 #messages li .message-wrapper .message-sender {
@@ -56,6 +58,7 @@ button {
 #messages li .message-wrapper .message {
     margin-top: 5px;
     font-size: medium;
+    font-family: 'Open Sans',sans-serif;
 }
 
 #message-input-wrapper {
@@ -63,14 +66,24 @@ button {
     bottom: 0;
     width: 100%;
     height: 40px;
-    background-color: lightyellow;
+    background-color: #f5f1ee;
+    box-shadow: 0 -1px 20px 0 rgba(0, 0, 0, 0.2);
 }
 
 #message-input {
-    margin: 5px;
+    display: block;
+    margin: 7px 5px 5px 10px;
     width: calc(100% - 60px);
     padding: 5px;
-    border-radius: 5px;
+    border-radius: 3px;
+    font-family: sans-serif;
+    border: solid 1px #dcdcdc;
+    transition: box-shadow 0.2s, border 0.2s;
+    outline: none;
+}
+
+#message-input:focus {
+    box-shadow: 0 0 20px 1px lightgray;
 }
 
 #send {
@@ -80,7 +93,8 @@ button {
     width: 40px;
     height: 40px;
     background-image: url('../img/send.png');
-    background-size: 35px;
+    background-size: 25px;
     background-repeat: no-repeat;
     background-position: center;
+    opacity: 0.5;
 }
