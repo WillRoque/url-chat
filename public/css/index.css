@@ -21,6 +21,34 @@ button {
     cursor: pointer;
 }
 
+.no-wrap {
+    white-space: nowrap;
+}
+
+#room-stats {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 20px;
+    line-height: 20px;
+    box-shadow: 0 5px 20px 0 rgba(0, 0, 0, 0.2);
+    background-color: lightseagreen;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    overflow: hidden;
+    padding: 0 5px 0 5px;
+}
+
+#messages {
+    position: absolute;
+    width: 100%;
+    top: 20px;
+    bottom: 40px;
+    overflow-y: scroll;
+    padding-bottom: 10px;
+}
+
 #messages li {
     display: inline-block;
     width: 100%;
@@ -83,7 +111,7 @@ button {
 }
 
 #message-input:focus {
-    box-shadow: 0 0 20px 1px lightgray;
+    box-shadow: 0 0 200px 1px lightseagreen;
 }
 
 #send {

@@ -1,4 +1,5 @@
 const socketIO = io('http://localhost:3000/');
+var userId;
 var tabUrl;
 var lastSender;
 
@@ -6,10 +7,13 @@ var lastSender;
  * Joins the chat room of the URL of the current tab
  */
 document.addEventListener('DOMContentLoaded', () => {
+  getUserId();
   getCurrentTabUrl((url) => {
     tabUrl = url;
     socketIO.emit('joinRoom', url);
+    document.getElementById('room-stats').innerHTML = '1 people in this room';
   });
+  document.getElementById('message-input').focus();
 });
 
 /**
@@ -46,12 +50,13 @@ function sendMessage() {
   }
 
   console.log('sending message: ' + message);
+  console.log('userId: ' + userId);
 
   addMessage(message, 'myself');
 
   socketIO.emit('chatMessage', {
     room: tabUrl,
-    sender: 'Sender Name',
+    sender: userId,
     message: message
   });
 
@@ -119,4 +124,26 @@ document.getElementById('message-input').onkeypress = (event) => {
   if (event.keyCode === 13) {
     sendMessage();
   }
+}
+
+/**
+ * Gets the identification of the user and sets it to the userId var.
+ * If this is the first time retrieving it, a random identification is
+ * generated and stored at chrome storage.
+ * 
+ * @param {function(string)} callback - called when the user's
+ *   Id is retrieved.
+ */
+function getUserId() {
+  chrome.storage.sync.get('userId', (items) => {
+    if (items.userId) {
+      userId = items.userId;
+    } else {
+      socketIO.emit('generateUserId', (newUserId) => {
+        console.log('server retornou novo id: ' + newUserId);
+        userId = newUserId;
+        chrome.storage.sync.set({ 'userId': newUserId });
+      });
+    }
+  });
 }

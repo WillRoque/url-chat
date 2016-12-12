@@ -1,11 +1,12 @@
 {
-    "name": "url-chat",
-    "version": "0.0.1",
-    "description": "Chat with people in the same URL",
-    "dependencies": {
-        "socket.io": "latest",
-        "express": "latest",
-        "jade": "latest"
-    },
-    "author": "Willian Roque"
+  "name": "url-chat",
+  "version": "0.0.1",
+  "description": "Chat with people in the same URL",
+  "dependencies": {
+    "express": "latest",
+    "jade": "latest",
+    "mongodb": "^2.2.15",
+    "socket.io": "latest"
+  },
+  "author": "Willian Roque"
 }
