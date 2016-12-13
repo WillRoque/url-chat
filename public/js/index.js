@@ -1,5 +1,5 @@
 const socketIO = io('http://localhost:3000/');
-var userId;
+var user;
 var tabUrl;
 var lastSender;
 
@@ -49,14 +49,11 @@ function sendMessage() {
     return;
   }
 
-  console.log('sending message: ' + message);
-  console.log('userId: ' + userId);
-
   addMessage(message, 'myself');
 
   socketIO.emit('chatMessage', {
     room: tabUrl,
-    sender: userId,
+    sender: user,
     message: message
   });
 
@@ -68,7 +65,6 @@ function sendMessage() {
  */
 socketIO.on('chatMessage', function (data) {
   console.log('receiving message: ' + data);
-
   addMessage(data.message, data.sender);
 });
 
@@ -135,14 +131,19 @@ document.getElementById('message-input').onkeypress = (event) => {
  *   Id is retrieved.
  */
 function getUserId() {
-  chrome.storage.sync.get('userId', (items) => {
-    if (items.userId) {
-      userId = items.userId;
+  chrome.storage.sync.get('user', (items) => {
+    if (items.user) {
+      user = items.user;
     } else {
       socketIO.emit('generateUserId', (newUserId) => {
         console.log('server retornou novo id: ' + newUserId);
-        userId = newUserId;
-        chrome.storage.sync.set({ 'userId': newUserId });
+        
+        user = {
+          id: newUserId,
+          name: ''
+        };
+
+        chrome.storage.sync.set({ 'user': user });
       });
     }
   });
