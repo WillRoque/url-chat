@@ -40,6 +40,16 @@ button {
     padding: 0 5px 0 5px;
 }
 
+#welcome-message {
+    width: 50%;
+    float: left;
+}
+
+#room-users-counter {
+    width: 50%;
+    float: right;
+}
+
 #messages {
     position: absolute;
     width: 100%;

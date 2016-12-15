@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   getCurrentTabUrl((url) => {
     tabUrl = url;
     socketIO.emit('joinRoom', url);
-    document.getElementById('room-stats').innerHTML = '1 people in this room';
   });
   document.getElementById('message-input').focus();
 });
@@ -53,7 +52,7 @@ function sendMessage() {
 
   socketIO.emit('chatMessage', {
     room: tabUrl,
-    sender: user,
+    senderId: user.id,
     message: message
   });
 
@@ -134,9 +133,12 @@ function getUserId() {
   chrome.storage.sync.get('user', (items) => {
     if (items.user) {
       user = items.user;
+      var a = user.name ? user.name : user.id;
+      document.getElementById('welcome-message').innerHTML = 'Hello ' + (user.name ? user.name : user.id);
     } else {
       socketIO.emit('generateUserId', (newUserId) => {
         console.log('server retornou novo id: ' + newUserId);
+        document.getElementById('welcome-message').innerHTML = 'Hello user ' + newUserId;
         
         user = {
           id: newUserId,

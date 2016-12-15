@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
      * other users in the same room
      */
     socket.on('chatMessage', (data) => {
-        chat.receiveChatMessage(socket, data.room, data.message, data.sender);
+        chat.receiveChatMessage(socket, data.room, data.message, data.senderId);
     });
 
     /**
