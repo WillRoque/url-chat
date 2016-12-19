@@ -2,14 +2,15 @@
   "manifest_version": 2,
 
   "name": "url-chat",
-  "description": "This extension shows a Google Image search result for the current page",
+  "description": "Here you can talk to other people that are seeing the same URL that you are now",
   "version": "1.0",
 
   "browser_action": {
     "default_icon": "/public/img/icon.png",
     "default_popup": "/public/index.html",
-    "default_title": "Click AQUI!"
+    "default_title": "Click to open this URL's chat"
   },
+
   "permissions": [
     "activeTab",
     "storage"

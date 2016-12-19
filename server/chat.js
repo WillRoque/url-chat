@@ -1,12 +1,16 @@
 var mongo = require('./mongodb.js');
 
-module.exports.receiveChatMessage = function (socket, room, message, senderId) {
+module.exports.receiveChatMessage = (socket, room, message, senderId, senderName) => {
     console.log('received message: ' + message);
-    socket.broadcast.to(room).emit('chatMessage', { sender: senderId, message: message });
+    socket.broadcast.to(room).emit('chatMessage', {
+        sender: { id: senderId, name: senderName },
+        message: message
+    });
 
     // Inserts this message and deletes old ones
     // to leave only 250 messages saved
     var message = {
+        room,
         senderId,
         message
     };
@@ -31,8 +35,9 @@ module.exports.receiveChatMessage = function (socket, room, message, senderId) {
             return;
         }
 
+        // TODO: test
         // Remove the exceeding old messages
-        chatRoom.find({})
+        chatRoom.find({ room: room })
             .sort({ _id: 1 })
             .limit(messagesLimit - count)
             .project({ _id: 1 })
@@ -49,5 +54,4 @@ module.exports.receiveChatMessage = function (socket, room, message, senderId) {
                 });
             });
     });
-
 }

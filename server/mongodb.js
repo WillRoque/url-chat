@@ -1,8 +1,9 @@
-var MongoClient = require('mongodb').MongoClient;
+var mongodb = require('mongodb');
 
 module.exports.init = function (callback) {
-    MongoClient.connect('mongodb://localhost:27017/url-chat', (err, db) => {
+    mongodb.MongoClient.connect('mongodb://localhost:27017/url-chat', (err, db) => {
         module.exports.db = db;
+        module.exports.ObjectId = mongodb.ObjectID;
         callback(err);
     });
 }

@@ -1,8 +1,10 @@
 var express = require('express');
 var http = require('http');
 var path = require('path');
+
 var mongo = require('./mongodb.js');
 var chat = require('./chat.js');
+var user = require('./user.js');
 
 var app = express();
 var httpServer = http.Server(app);
@@ -32,13 +34,14 @@ io.on('connection', (socket) => {
      * this same object will be updated
      */
     socket.on('generateUserId', (callback) => {
-        mongo.db.collection('users').insertOne({}, (err, result) => {
-            if (err) {
-                console.error(err);
-            }
+        user.generateUserId(callback);
+    });
 
-            callback(result.insertedId);
-        });
+    /**
+     * Changes the name of the user of the specified id
+     */
+    socket.on('changeUserName', (data) => {
+        user.changeUserName(socket, data.room, data.userId, data.userName);
     });
 
     /**
@@ -54,7 +57,7 @@ io.on('connection', (socket) => {
      * other users in the same room
      */
     socket.on('chatMessage', (data) => {
-        chat.receiveChatMessage(socket, data.room, data.message, data.senderId);
+        chat.receiveChatMessage(socket, data.room, data.message, data.senderId, data.senderName);
     });
 
     /**
