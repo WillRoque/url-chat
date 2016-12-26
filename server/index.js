@@ -11,63 +11,60 @@ var httpServer = http.Server(app);
 var io = require('socket.io')(httpServer);
 
 /**
- * Sets the path to the files to be served to the client
+ * Sets the path to the files to be served to the client.
  */
 app.use(express.static(path.join(__dirname, '../public')));
 
 /**
- * Serves to the client the chat page
+ * Serves to the client the chat page.
  */
 app.get('/', (req, res) => {
     res.sendFile('/index.html');
 });
 
 /**
- * The SocketIO methods used for the communication with the client
+ * The SocketIO methods used for the communication with the client.
  */
 io.on('connection', (socket) => {
-    console.log('user connected');
 
     /**
-     * Inserts an empty user to get the _id generated,
-     * later on if the user decides to set a nick name,
-     * this same object will be updated
+     * Generates an id to a new user.
      */
     socket.on('generateUserId', (callback) => {
         user.generateUserId(callback);
     });
 
     /**
-     * Changes the name of the user of the specified id
+     * Changes the name of a user.
      */
     socket.on('changeUserName', (data) => {
         user.changeUserName(socket, data.room, data.userId, data.userName);
     });
 
     /**
-     * Inserts a user into a room
+     * Inserts a user into a room.
      */
     socket.on('joinRoom', (room) => {
-        console.log('user joining room ' + room);
-        socket.join(room);
+        chat.joinRoom(socket, room);
     });
 
     /**
-     * Broadcasts a user's message to the
-     * other users in the same room
+     * Broadcasts a user's message to the other users in the same room.
      */
     socket.on('chatMessage', (data) => {
         chat.receiveChatMessage(socket, data.room, data.message, data.senderId, data.senderName);
     });
 
     /**
-     * Disconnects a user
+     * Updates the user counter for other users when someone disconnects
      */
-    socket.on('disconnect', () => console.log('user disconnected'));
+    socket.on('disconnecting', () => {
+        chat.removeUserFromRoomCounter(socket);
+    });
 });
 
 /**
- * Connects to the MongoDB, if no error occurred, starts the server
+ * Connects to the MongoDB and, if no error occurred, starts the server.
  */
 mongo.init((err) => {
     if (err) {

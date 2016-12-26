@@ -16,6 +16,27 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Receives a chat message from the server.
+ */
+socketIO.on('chatMessage', function (data) {
+  console.log('receiving message: ' + data);
+  addMessage(data.message, data.sender);
+});
+
+/**
+ * Called when some other user changes his name,
+ * so it also changes his name shown in his messages
+ * on other users computers.
+ */
+socketIO.on('changeUserName', (data) => {
+  changeUserName(data.user.id, data.user.name);
+});
+
+socketIO.on('updateUserCounter', (data) => {
+  document.getElementById('room-users-counter').innerHTML = data.userCount + ' users in this room';
+});
+
+/**
  * Gets the URL of the current active tab.
  *
  * @param {function(string)} callback - called when the URL of the current tab
@@ -61,14 +82,6 @@ function sendMessage() {
 }
 
 /**
- * Receives a chat message from the server.
- */
-socketIO.on('chatMessage', function (data) {
-  console.log('receiving message: ' + data);
-  addMessage(data.message, data.sender);
-});
-
-/**
  * Adds a message to the chat, either it's been received or sent.
  * 
  * @param message - message received/sent.
@@ -107,12 +120,9 @@ function addMessage(message, sender) {
 }
 
 /**
- * Gets the identification of the user and sets it to the userId var.
+ * Gets the identification of the user and sets it into the user.id var.
  * If this is the first time retrieving it, a random identification is
  * generated and stored at chrome storage.
- * 
- * @param {function(string)} callback - called when the user's
- *   Id is retrieved.
  */
 function getUserId() {
   chrome.storage.sync.get('user', (items) => {
@@ -144,24 +154,19 @@ function getUserId() {
 }
 
 /**
- * Called when some other user changes his name,
- * so it also changes his name shown in his messages
- * on other users computers.
- */
-socketIO.on('changeUserName', (data) => {
-  changeUserName(data.user.id, data.user.name);
-});
-
-/**
  * Changes the name of the user
  * 
- * @param userId - the Id of the user that changed his name.
+ * @param userId - the id of the user that changed his name.
  * @param userName - the new name of the user that changed his name.
  */
 function changeUserName(userId, userName) {
+  if (user.id === userId) {
+    document.getElementById('user').innerHTML = userName;
+  }
+
   var senders = document.getElementById('messages').getElementsByClassName('message-sender');
   Array.prototype.forEach.call(senders, (sender) => {
-    if (sender.innerHTML.indexOf(sender.id) === 0) {
+    if (sender.innerHTML.startsWith(userId)) {
       sender.innerHTML = userId + (userName ? ' (' + userName + ')' : '') + ':';
     }
   });

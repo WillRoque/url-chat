@@ -1,9 +1,16 @@
 var mongodb = require('mongodb');
 
-module.exports.init = function (callback) {
+/**
+ * Connects to the database.
+ * 
+ * @param {function(string)} callback - lets the callback
+ *   function know if some error occurred.
+ */
+module.exports.init = (callback) => {
     mongodb.MongoClient.connect('mongodb://localhost:27017/url-chat', (err, db) => {
         module.exports.db = db;
-        module.exports.ObjectId = mongodb.ObjectID;
+        module.exports.ObjectID = mongodb.ObjectID;
+
         callback(err);
     });
 }
