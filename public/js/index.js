@@ -16,9 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * When this client enters a room,
+ * receives the user count and the last
+ * messages sent to this room.
+ */
+socketIO.on('login', (data) => {
+  changeUserCounter(data.userCount);
+
+  for (var i = 0; i < data.messages.length; i++) {
+    addMessage(data.messages[i].message, data.messages[i].sender);
+  }
+});
+
+/**
  * Receives a chat message from the server.
  */
-socketIO.on('chatMessage', function (data) {
+socketIO.on('chatMessage', (data) => {
   console.log('receiving message: ' + data);
   addMessage(data.message, data.sender);
 });
@@ -32,9 +45,22 @@ socketIO.on('changeUserName', (data) => {
   changeUserName(data.user.id, data.user.name);
 });
 
+/**
+ * Changes the user counter when some other
+ * user joined or left the room.
+ */
 socketIO.on('updateUserCounter', (data) => {
-  document.getElementById('room-users-counter').innerHTML = data.userCount + ' users in this room';
+  changeUserCounter(data.userCount);
 });
+
+/**
+ * Changes the user counter.
+ * 
+ * @param userCount - the amount of users to be showed on the counter.
+ */
+function changeUserCounter(userCount) {
+  document.getElementById('room-users-counter').innerHTML = userCount + ' users in this room';
+}
 
 /**
  * Gets the URL of the current active tab.
@@ -69,7 +95,7 @@ function sendMessage() {
     return;
   }
 
-  addMessage(message, 'myself');
+  addMessage(message, user.id);
 
   socketIO.emit('chatMessage', {
     room: tabUrl,
@@ -88,7 +114,7 @@ function sendMessage() {
  * @param sender - if the message was sent by this client,
  *   adds the sender's name on top of the message.
  */
-function addMessage(message, sender) {
+function addMessage(message, sender, timestamp) {
   var li = document.createElement('li');
 
   if (lastSenderId && lastSenderId === sender) {
@@ -100,7 +126,7 @@ function addMessage(message, sender) {
   var messageWrapper = document.createElement('div');
   messageWrapper.className = 'message-wrapper';
 
-  if (sender && sender !== 'myself') { // TODO: change 'myself' to ID
+  if (sender && sender.id && sender.id !== user.id) {
     var messageSender = document.createElement('div');
     messageSender.classList.add('message-sender');
     messageSender.innerHTML = sender.id + (sender.name ? ' (' + sender.name + ')' : '') + ':';

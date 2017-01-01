@@ -29,8 +29,15 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
     // Finds how many messages are stored for this room
     chatRoom.aggregate([
         { $match: { room: room } },
-        { $project: { messages: '$messages' } },
-        { $sort: { timestamp: 1 } }
+        { $unwind: '$messages' },
+        { $sort: { timestamp: 1 } },
+        {
+            $project: {
+                senderId: '$messages.senderId',
+                message: '$messages.message',
+                timestamp: '$messages.timestamp'
+            }
+        }
     ], (err, result) => {
         if (err) {
             return console.error(err);
@@ -38,15 +45,13 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
 
         // Does nothing if the room is not yet in the database or
         // it is but the number messages don't exceed the limit
-        if (!result || result.length === 0 || result[0].messages.length <= messagesLimit) {
+        if (!result || result.length === 0 || result.length <= messagesLimit) {
             return;
         }
 
         // Remove the exceeding old messages
-        var exceeding = result[0].messages.length - messagesLimit;
-        var messagesToBeRemoved = result[0].messages
-            .slice(0, exceeding)
-            .map((message) => message.timestamp);
+        var exceeding = result.length - messagesLimit;
+        var messagesToBeRemoved = result.slice(0, exceeding).map((message) => message.timestamp);
 
         // Translation to the query:
         // Removes messages where the timestamp is in the 'messagesToBeRemoved' array
@@ -60,7 +65,7 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
 
     // Inserts this message into the database
     var message = {
-        senderId,
+        senderId: new mongo.ObjectID(senderId),
         message,
         timestamp: Date.now()
     };
@@ -76,6 +81,48 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
 }
 
 /**
+ * Retrieves the last messages stored in the database.
+ * 
+ * @param room - the room where the messages are stored.
+ * @param lastMessageTime - the timestamp of the last (newest) message to be
+ *   retrieved, all the other messages retrieved will be older than this one.
+ * @param messagesLimit - the number of messages to be retrieved.
+ * @param {function(err, result)} callback - called when the query is done executing.
+ */
+function getLastMessages(room, lastMessageTime, messagesLimit, callback) {
+    mongo.db.collection('chatRoom').aggregate([
+        { $match: { room: room } },
+        { $unwind: '$messages' },
+        { $sort: { 'messages.timestamp': -1 } },
+        { $match: { 'messages.timestamp': { $lte: lastMessageTime } } },
+        { $limit: messagesLimit },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'messages.senderId',
+                foreignField: '_id',
+                as: 'users'
+            }
+        },
+        { $sort: { 'messages.timestamp': 1 } },
+        {
+            $project: {
+                _id: 0,
+                sender: { id: '$messages.senderId', name: { $arrayElemAt: ['$users.name', 0] } },
+                message: '$messages.message',
+                timestamp: '$messages.timestamp'
+            }
+        }
+    ], (err, result) => {
+        if (err) {
+            return callback(err);
+        }
+
+        callback(null, result);
+    });
+}
+
+/**
  * Inserts a user into a room and updates the user counter
  * on the clients.
  * 
@@ -88,8 +135,22 @@ module.exports.joinRoom = (socket, room) => {
             return console.error(err);
         }
 
-        // Updates his own user counter, then updates the user counter to other users
-        socket.emit('updateUserCounter', { userCount: socket.adapter.rooms[room].length });
+        // Updates his own user counter and gets
+        // the last messages sent to this room
+        getLastMessages(room, Date.now(), 20, (err, result) => {
+            if (err) {
+                return console.error(err);
+            }
+
+            var data = {
+                userCount: socket.adapter.rooms[room].length,
+                messages: result
+            };
+
+            socket.emit('login', data);
+        });
+
+        // Updates the user counter to other users
         updateUserCounter(socket, room, socket.adapter.rooms[room].length);
     });
 }
@@ -103,7 +164,7 @@ module.exports.joinRoom = (socket, room) => {
  */
 module.exports.removeUserFromRoomCounter = (socket) => {
     for (roomName in socket.rooms) {
-        // If he/she is the only one in this room,
+        // If the user is the only one in this room,
         // there is no need to update anyone else
         if (socket.adapter.rooms[roomName].length === 1) {
             continue;
