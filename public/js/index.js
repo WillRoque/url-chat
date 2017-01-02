@@ -24,7 +24,7 @@ socketIO.on('login', (data) => {
   changeUserCounter(data.userCount);
 
   for (var i = 0; i < data.messages.length; i++) {
-    addMessage(data.messages[i].message, data.messages[i].sender);
+    addMessage(data.messages[i].message, data.messages[i].sender, data.messages[i].timestamp);
   }
 });
 
@@ -33,7 +33,7 @@ socketIO.on('login', (data) => {
  */
 socketIO.on('chatMessage', (data) => {
   console.log('receiving message: ' + data);
-  addMessage(data.message, data.sender);
+  addMessage(data.message, data.sender, data.timestamp);
 });
 
 /**
@@ -95,7 +95,7 @@ function sendMessage() {
     return;
   }
 
-  addMessage(message, user.id);
+  addMessage(message, user.id, Date.now());
 
   socketIO.emit('chatMessage', {
     room: tabUrl,
@@ -126,15 +126,39 @@ function addMessage(message, sender, timestamp) {
   var messageWrapper = document.createElement('div');
   messageWrapper.className = 'message-wrapper';
 
+  // Adds the message time
+  var messageTime = document.createElement('div');
+  messageTime.classList.add('message-time');
+  messageTime.innerHTML = new Date(timestamp).toLocaleString();
+  messageWrapper.appendChild(messageTime);
+
+  // Adds the message sender
   if (sender && sender.id && sender.id !== user.id) {
-    var messageSender = document.createElement('div');
-    messageSender.classList.add('message-sender');
-    messageSender.innerHTML = sender.id + (sender.name ? ' (' + sender.name + ')' : '') + ':';
-    messageWrapper.appendChild(messageSender);
+    var messageSenderWrapper = document.createElement('div');
+    messageSenderWrapper.classList.add('message-sender');
+
+    var messageSenderId = document.createElement('div');
+    messageSenderId.classList.add('message-sender-id');
+    messageSenderId.innerHTML = sender.id + ':';
+
+    var messageSenderName = document.createElement('div');
+    messageSenderName.classList.add('message-sender-name');
+
+    if (sender.name) {
+      messageSenderId.classList.add('invisible');
+      messageSenderName.innerHTML = sender.name + ':';
+    }
+
+    messageSenderWrapper.appendChild(messageSenderId);
+    messageSenderWrapper.appendChild(messageSenderName);
+    messageWrapper.appendChild(messageSenderWrapper);
+    messageTime.innerHTML = messageTime.innerHTML + ' - ';
   } else {
     messageWrapper.classList.add('my-message');
+    messageTime.innerHTML = messageTime.innerHTML + ':';
   }
 
+  // Adds the message itself
   var messageDiv = document.createElement('div');
   messageDiv.className = 'message';
   messageDiv.appendChild(document.createTextNode(message));
@@ -142,7 +166,9 @@ function addMessage(message, sender, timestamp) {
 
   li.appendChild(messageWrapper);
 
-  document.getElementById('messages').appendChild(li);
+  var messages = document.getElementById('messages');
+  messages.appendChild(li);
+  messages.scrollTop = messages.scrollHeight;
 }
 
 /**
@@ -187,13 +213,20 @@ function getUserId() {
  */
 function changeUserName(userId, userName) {
   if (user.id === userId) {
-    document.getElementById('user').innerHTML = userName;
+    var userDiv = document.getElementById('user');
+    userDiv.innerHTML = userName;
+    document.getElementById('welcome-message').innerHTML = 'Hello ' + userDiv.outerHTML;
+    setUserDivClickable();
   }
 
   var senders = document.getElementById('messages').getElementsByClassName('message-sender');
   Array.prototype.forEach.call(senders, (sender) => {
-    if (sender.innerHTML.startsWith(userId)) {
-      sender.innerHTML = userId + (userName ? ' (' + userName + ')' : '') + ':';
+    var senderIdDiv = sender.getElementsByClassName('message-sender-id')[0];
+
+    if (senderIdDiv.innerHTML.startsWith(userId)) {
+      senderIdDiv.classList.add('invisible');
+      var senderNameDiv = sender.getElementsByClassName('message-sender-name')[0];
+      senderNameDiv.innerHTML = userName + ':';
     }
   });
 }

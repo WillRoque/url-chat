@@ -25,6 +25,10 @@ button {
     white-space: nowrap;
 }
 
+.invisible {
+    display: none !important;
+}
+
 #room-stats {
     position: fixed;
     top: 0;
@@ -72,11 +76,11 @@ button {
     margin-top: 5px;
 }
 
-#messages .continuous-message {
+.continuous-message {
     margin-top: 2px;
 }
 
-#messages li .message-wrapper {
+.message-wrapper {
     float: left;
     background-color: white;
     box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -87,20 +91,20 @@ button {
     max-width: 80%;
 }
 
-#messages li .my-message {
+.my-message {
     float: right;
     background-color: #dcf8c6;
 }
 
-#messages li .message-wrapper .message-sender {
-    display: block;
-    font-size: smaller;
+.message-time, .message-sender, .message-sender-id, .message-sender-name {
+    display: inline;
+    font-size: x-small;
     font-style: oblique;
     font-weight: bold;
     color: cadetblue;
 }
 
-#messages li .message-wrapper .message {
+.message {
     margin-top: 5px;
     font-size: medium;
     font-family: 'Open Sans',sans-serif;

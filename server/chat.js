@@ -13,9 +13,13 @@ var mongo = require('./mongodb.js');
  */
 module.exports.receiveChatMessage = (socket, room, message, senderId, senderName) => {
     console.log('received message: ' + message);
+
+    var messageTimestamp = Date.now();
+
     socket.broadcast.to(room).emit('chatMessage', {
         sender: { id: senderId, name: senderName },
-        message: message
+        message: message,
+        timestamp: messageTimestamp
     });
 
     var chatRoom = mongo.db.collection('chatRoom');
@@ -67,7 +71,7 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
     var message = {
         senderId: new mongo.ObjectID(senderId),
         message,
-        timestamp: Date.now()
+        timestamp: messageTimestamp
     };
 
     chatRoom.updateOne({ room: room },
