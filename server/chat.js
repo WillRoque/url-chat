@@ -85,6 +85,25 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
 }
 
 /**
+ * Retrieves the last messages stored in the database
+ * and sends it back to the client that requested it.
+ * 
+ * @param socket - the socket that sent this request.
+ * @param room - the room where the messages are stored.
+ * @param lastMessageTime - the timestamp of the last (newest) message to be
+ *   retrieved, all the other messages retrieved will be older than this one.
+ */
+module.exports.getLastMessages = (socket, room, lastMessageTime) => {
+    getLastMessages(room, lastMessageTime, 20, (err, result) => {
+        if (err) {
+            return console.error(err);
+        }
+
+        socket.emit('olderChatMessages', result);
+    });
+}
+
+/**
  * Retrieves the last messages stored in the database.
  * 
  * @param room - the room where the messages are stored.
@@ -98,7 +117,7 @@ function getLastMessages(room, lastMessageTime, messagesLimit, callback) {
         { $match: { room: room } },
         { $unwind: '$messages' },
         { $sort: { 'messages.timestamp': -1 } },
-        { $match: { 'messages.timestamp': { $lte: lastMessageTime } } },
+        { $match: { 'messages.timestamp': { $lt: lastMessageTime } } },
         { $limit: messagesLimit },
         {
             $lookup: {

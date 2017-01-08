@@ -2,6 +2,7 @@ const socketIO = io('http://localhost:3000/');
 var user = { id: '', name: '' };
 var tabUrl;
 var lastSenderId;
+var oldestMessageTimestamp;
 
 /**
  * Joins the chat room of the URL of the current tab.
@@ -32,8 +33,20 @@ socketIO.on('login', (data) => {
  * Receives a chat message from the server.
  */
 socketIO.on('chatMessage', (data) => {
-  console.log('receiving message: ' + data);
   addMessage(data.message, data.sender, data.timestamp);
+});
+
+/**
+ * Receives older messages from the server.
+ */
+socketIO.on('olderChatMessages', (messages) => {
+  for (var i = messages.length - 1; i >= 0; i--) {
+    addMessage(messages[i].message, messages[i].sender, messages[i].timestamp, true);
+  }
+
+  var lastMessageInserted = document.getElementById('messages').getElementsByTagName('li')[messages.length - 1];
+  removeLoadingOlderMessages();
+  lastMessageInserted.scrollIntoView();
 });
 
 /**
@@ -113,8 +126,13 @@ function sendMessage() {
  * @param message - message received/sent.
  * @param sender - if the message was sent by this client,
  *   adds the sender's name on top of the message.
+ * @param prepend - add the message to the beginning.
  */
-function addMessage(message, sender, timestamp) {
+function addMessage(message, sender, timestamp, prepend) {
+  if (!oldestMessageTimestamp || timestamp < oldestMessageTimestamp) {
+    oldestMessageTimestamp = timestamp;
+  }
+
   var li = document.createElement('li');
 
   if (lastSenderId && lastSenderId === sender) {
@@ -127,10 +145,21 @@ function addMessage(message, sender, timestamp) {
   messageWrapper.className = 'message-wrapper';
 
   // Adds the message time
-  var messageTime = document.createElement('div');
-  messageTime.classList.add('message-time');
-  messageTime.innerHTML = new Date(timestamp).toLocaleString();
-  messageWrapper.appendChild(messageTime);
+  var messageTimeWrapper = document.createElement('div');
+  messageTimeWrapper.classList.add('message-time');
+
+  var messageTimestamp = document.createElement('div');
+  messageTimestamp.classList.add('message-timestamp');
+  messageTimestamp.classList.add('invisible');
+  messageTimestamp.innerHTML = timestamp;
+
+  var messageReadableTime = document.createElement('div');
+  messageReadableTime.classList.add('message-readable-time');
+  messageReadableTime.innerHTML = new Date(timestamp).toLocaleString();
+
+  messageTimeWrapper.appendChild(messageTimestamp);
+  messageTimeWrapper.appendChild(messageReadableTime);
+  messageWrapper.appendChild(messageTimeWrapper);
 
   // Adds the message sender
   if (sender && sender.id && sender.id !== user.id) {
@@ -152,23 +181,28 @@ function addMessage(message, sender, timestamp) {
     messageSenderWrapper.appendChild(messageSenderId);
     messageSenderWrapper.appendChild(messageSenderName);
     messageWrapper.appendChild(messageSenderWrapper);
-    messageTime.innerHTML = messageTime.innerHTML + ' - ';
+    messageReadableTime.innerHTML = messageReadableTime.innerHTML + ' - ';
   } else {
     messageWrapper.classList.add('my-message');
-    messageTime.innerHTML = messageTime.innerHTML + ':';
+    messageReadableTime.innerHTML = messageReadableTime.innerHTML + ':';
   }
 
-  // Adds the message itself
+  // Adds the message
   var messageDiv = document.createElement('div');
   messageDiv.className = 'message';
   messageDiv.appendChild(document.createTextNode(message));
   messageWrapper.appendChild(messageDiv);
 
   li.appendChild(messageWrapper);
-
   var messages = document.getElementById('messages');
-  messages.appendChild(li);
-  messages.scrollTop = messages.scrollHeight;
+
+  if (prepend) {
+    messages.insertBefore(li, messages.getElementsByTagName('li')[0]);
+  } else {
+    messages.appendChild(li);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
 }
 
 /**
@@ -253,7 +287,25 @@ function changeMyUserName() {
   chrome.storage.sync.set({ 'user': user });
 
   document.getElementById('name-input').value = '';
-  document.getElementById('name-input-wrapper').style.visibility = 'hidden';
+  document.getElementById('name-input-wrapper').classList.add('invisible');
+}
+
+/**
+ * Shows an animation that indicates that
+ * older messages are being loaded.
+ */
+function showLoadingOlderMessages() {
+  document.getElementById('loading-older-messages-wrapper').classList.remove('invisible');
+  document.getElementById('messages').style.paddingTop = '50px';
+}
+
+/**
+ * Removes the animation that indicates that
+ * older messages are being loaded.
+ */
+function removeLoadingOlderMessages() {
+  document.getElementById('loading-older-messages-wrapper').classList.add('invisible');
+  document.getElementById('messages').style.paddingTop = '0';
 }
 
 /**
@@ -264,7 +316,7 @@ function changeMyUserName() {
  */
 function setUserDivClickable() {
   document.getElementById('user').onclick = () => {
-    document.getElementById('name-input-wrapper').style.visibility = 'visible';
+    document.getElementById('name-input-wrapper').classList.remove('invisible');
     document.getElementById('name-input').focus();
   }
 }
@@ -273,7 +325,7 @@ function setUserDivClickable() {
  * Hides the "Write your name" input.
  */
 document.getElementById('name-input-close').onclick = () => {
-  document.getElementById('name-input-wrapper').style.visibility = 'hidden';
+  document.getElementById('name-input-wrapper').classList.add('invisible');
 }
 
 /**
@@ -309,5 +361,16 @@ document.getElementById('send').onclick = sendMessage;
 document.getElementById('message-input').onkeypress = (event) => {
   if (event.keyCode === 13) {
     sendMessage();
+  }
+}
+
+/**
+ * Loads older messages when the user scrolls to the top
+ * of the page.
+ */
+document.getElementById('messages').onscroll = (event) => {
+  if (document.getElementById('messages').scrollTop === 0) {
+    showLoadingOlderMessages();
+    socketIO.emit('loadOlderMessages', { room: tabUrl, oldestMessageTimestamp });
   }
 }

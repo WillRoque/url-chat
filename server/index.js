@@ -56,6 +56,14 @@ io.on('connection', (socket) => {
     });
 
     /**
+     * Loads older messages from the database and sends it back to the
+     * socket that requested it.
+     */
+    socket.on('loadOlderMessages', (data) => {
+        chat.getLastMessages(socket, data.room, data.oldestMessageTimestamp);
+    });
+
+    /**
      * Updates the user counter for other users when someone disconnects
      */
     socket.on('disconnecting', () => {
