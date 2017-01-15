@@ -49,6 +49,20 @@ io.on('connection', (socket) => {
     });
 
     /**
+     * Notifies that someone is typing.
+     */
+    socket.on('typing', (data) => {
+        chat.notifyIsTyping(socket, data.room, data.user);
+    });
+
+    /**
+     * Notifies that someone stopped typing.
+     */
+    socket.on('stoppedTyping', (data) => {
+        chat.notifyStoppedTyping(socket, data.room, data.user);
+    });
+
+    /**
      * Broadcasts a user's message to the other users in the same room.
      */
     socket.on('chatMessage', (data) => {

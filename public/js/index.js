@@ -3,6 +3,7 @@ var user = { id: '', name: '' };
 var tabUrl;
 var lastSenderId;
 var oldestMessageTimestamp;
+var isTyping = false;
 
 /**
  * Joins the chat room of the URL of the current tab.
@@ -26,6 +27,48 @@ socketIO.on('login', (data) => {
 
   for (var i = 0; i < data.messages.length; i++) {
     addMessage(data.messages[i].message, data.messages[i].sender, data.messages[i].timestamp);
+  }
+});
+
+/**
+ * Notifies that someone is typing.
+ */
+socketIO.on('typing', (user) => {
+  var usersTyping = document.getElementById('users-typing');
+  
+  if (usersTyping.getElementsByClassName(user.id).length > 0) {
+    return;
+  }
+
+  var userTyping = document.createElement('li');
+  userTyping.classList.add(user.id);
+  userTyping.innerHTML = user.name ? user.name : user.id;
+  usersTyping.appendChild(userTyping);
+
+  if (usersTyping.childNodes.length === 1) {
+    document.getElementById('is-are-typing').innerHTML = 'is typing...';
+  } else {
+    document.getElementById('is-are-typing').innerHTML = 'are typing...';
+  }
+});
+
+/**
+ * Notifies that someone has stopped typing.
+ */
+socketIO.on('stoppedTyping', (user) => {
+  var usersTyping = document.getElementById('users-typing');
+  var userTyping = usersTyping.getElementsByClassName(user.id);
+
+  if (userTyping && userTyping.length > 0) {
+    usersTyping.removeChild(userTyping[0]);
+  }
+
+  if (usersTyping.childNodes.length === 0) {
+    document.getElementById('is-are-typing').innerHTML = '';
+  } else if (usersTyping.childNodes.length === 1) {
+    document.getElementById('is-are-typing').innerHTML = 'is typing...';
+  } else {
+    document.getElementById('is-are-typing').innerHTML = 'are typing...';
   }
 });
 
@@ -181,7 +224,7 @@ function addMessage(message, sender, timestamp, prepend) {
     messageSenderWrapper.appendChild(messageSenderId);
     messageSenderWrapper.appendChild(messageSenderName);
     messageWrapper.appendChild(messageSenderWrapper);
-    messageReadableTime.innerHTML = messageReadableTime.innerHTML + ' - ';
+    messageReadableTime.innerHTML = messageReadableTime.innerHTML + ' -';
   } else {
     messageWrapper.classList.add('my-message');
     messageReadableTime.innerHTML = messageReadableTime.innerHTML + ':';
@@ -372,5 +415,21 @@ document.getElementById('messages').onscroll = (event) => {
   if (document.getElementById('messages').scrollTop === 0) {
     showLoadingOlderMessages();
     socketIO.emit('loadOlderMessages', { room: tabUrl, oldestMessageTimestamp });
+  }
+}
+
+/**
+ * Detects when the user is typing and broadcasts it to
+ * other users in the same room.
+ */
+document.getElementById('message-input').onkeyup = (event) => {
+  if (document.getElementById('message-input').value === '') {
+    isTyping = false;
+    return socketIO.emit('stoppedTyping', { room: tabUrl, user });
+  }
+
+  if (!isTyping) {
+    socketIO.emit('typing', { room: tabUrl, user });
+    isTyping = true;
   }
 }

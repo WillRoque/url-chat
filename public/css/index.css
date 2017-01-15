@@ -67,7 +67,7 @@ button {
     top: 20px;
     bottom: 40px;
     overflow-y: scroll;
-    padding-bottom: 10px;
+    padding-bottom: 15px;
 }
 
 #messages li {
@@ -91,23 +91,49 @@ button {
     max-width: 80%;
 }
 
-.my-message {
-    float: right;
-    background-color: #dcf8c6;
+.message-time {
+    margin-right: 3px;
 }
 
 .message-time, .message-sender, .message-sender-id, .message-sender-name {
-    display: inline;
+    display: inline-block;
     font-size: x-small;
     font-style: oblique;
     font-weight: bold;
     color: cadetblue;
 }
 
+.my-message {
+    float: right;
+    background-color: #dcf8c6;
+}
+
 .message {
     margin-top: 5px;
     font-size: medium;
     font-family: 'Open Sans',sans-serif;
+}
+
+#users-typing-wrapper {
+    position: fixed;
+    width: 100%;
+    bottom: 45px;
+    margin-left: 10px;
+    color: white;
+    font-size: x-small;
+    font-weight: bold;
+}
+
+#users-typing, #users-typing li, #is-are-typing {
+    display: inline-block;
+}
+
+#users-typing li:after {
+    content: ', \00a0';
+}
+
+#users-typing li:last-child:after {
+    content: '';
 }
 
 #message-input-wrapper {

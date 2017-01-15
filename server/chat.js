@@ -207,3 +207,25 @@ module.exports.removeUserFromRoomCounter = (socket) => {
 function updateUserCounter(socket, room, userCount) {
     socket.broadcast.to(room).emit('updateUserCounter', { userCount: userCount });
 }
+
+/**
+ * Notifies the other users in the room that this user is typing.
+ * 
+ * @param socket - socket of the user that is typing.
+ * @param room - name of the room to be notified.
+ * @param user - user who is typing.
+ */
+module.exports.notifyIsTyping = (socket, room, user) => {
+    socket.broadcast.to(room).emit('typing', user);
+}
+
+/**
+ * Notifies the other users in the room that this user has stopped typing.
+ * 
+ * @param socket - socket of the user that has stopped typing.
+ * @param room - name of the room to be notified.
+ * @param user - user who has stopped typing.
+ */
+module.exports.notifyStoppedTyping = (socket, room, user) => {
+    socket.broadcast.to(room).emit('stoppedTyping', user);
+}
