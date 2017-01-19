@@ -9,6 +9,7 @@ var isTyping = false;
  * Joins the chat room of the URL of the current tab.
  */
 document.addEventListener('DOMContentLoaded', () => {
+  showLoadingOlderMessages();
   getUserId();
   getCurrentTabUrl((url) => {
     tabUrl = url;
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * messages sent to this room.
  */
 socketIO.on('login', (data) => {
+  removeLoadingOlderMessages();
   changeUserCounter(data.userCount);
 
   for (var i = 0; i < data.messages.length; i++) {
@@ -35,7 +37,7 @@ socketIO.on('login', (data) => {
  */
 socketIO.on('typing', (user) => {
   var usersTyping = document.getElementById('users-typing');
-  
+
   if (usersTyping.getElementsByClassName(user.id).length > 0) {
     return;
   }
@@ -259,6 +261,11 @@ function getUserId() {
       user = items.user;
 
       var userDiv = document.getElementById('user');
+
+      if (!user.name) {
+        userDiv.classList.add('pulsate');
+      }
+
       userDiv.innerHTML = user.name ? user.name : user.id;
       document.getElementById('welcome-message').innerHTML = (user.name ? 'Hello ' : 'Hello user ') + userDiv.outerHTML;
       setUserDivClickable();
@@ -267,6 +274,7 @@ function getUserId() {
         console.log('server retornou novo id: ' + newUserId);
 
         var userDiv = document.getElementById('user');
+        userDiv.classList.add('pulsate');
         userDiv.innerHTML = newUserId;
         document.getElementById('welcome-message').innerHTML = 'Hello user ' + userDiv.outerHTML;
         setUserDivClickable();
@@ -291,6 +299,7 @@ function getUserId() {
 function changeUserName(userId, userName) {
   if (user.id === userId) {
     var userDiv = document.getElementById('user');
+    userDiv.classList.remove('pulsate');
     userDiv.innerHTML = userName;
     document.getElementById('welcome-message').innerHTML = 'Hello ' + userDiv.outerHTML;
     setUserDivClickable();
