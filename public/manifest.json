@@ -6,8 +6,8 @@
   "version": "1.0",
 
   "browser_action": {
-    "default_icon": "/public/img/icon.png",
-    "default_popup": "/public/index.html",
+    "default_icon": "/img/chat_small.png",
+    "default_popup": "/index.html",
     "default_title": "Click to open this URL's chat"
   },
 

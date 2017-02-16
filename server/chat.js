@@ -12,8 +12,6 @@ var mongo = require('./mongodb.js');
  * @param senderName - the name of the user that sent this chat message.
  */
 module.exports.receiveChatMessage = (socket, room, message, senderId, senderName) => {
-    console.log('received message: ' + message);
-
     var messageTimestamp = Date.now();
 
     socket.broadcast.to(room).emit('chatMessage', {

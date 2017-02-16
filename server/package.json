@@ -8,5 +8,9 @@
     "mongodb": "^2.2.15",
     "socket.io": "latest"
   },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "main": "index.js",
   "author": "Willian Roque"
 }

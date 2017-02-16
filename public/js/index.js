@@ -271,8 +271,6 @@ function getUserId() {
       setUserDivClickable();
     } else {
       socketIO.emit('generateUserId', (newUserId) => {
-        console.log('server retornou novo id: ' + newUserId);
-
         var userDiv = document.getElementById('user');
         userDiv.classList.add('pulsate');
         userDiv.innerHTML = newUserId;
