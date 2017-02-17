@@ -7,7 +7,10 @@ var mongodb = require('mongodb');
  *   function know if some error occurred.
  */
 module.exports.init = (callback) => {
-    mongodb.MongoClient.connect('mongodb://localhost:27017/url-chat', (err, db) => {
+    var user = process.env.MONGODB_USER;
+    var password = process.env.MONGODB_PASSWORD;
+    
+    mongodb.MongoClient.connect('mongodb://' + user + ':' + password + '@localhost:27017/urlChat', (err, db) => {
         module.exports.db = db;
         module.exports.ObjectID = mongodb.ObjectID;
 
