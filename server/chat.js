@@ -20,7 +20,7 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
         timestamp: messageTimestamp
     });
 
-    var chatRoom = mongo.db.collection('chatRoom');
+    var chatRooms = mongo.db.collection('chatRooms');
 
     // Verifies if there are more than
     // 250 messages saved in this room
@@ -29,7 +29,7 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
     var messagesLimit = 249;
 
     // Finds how many messages are stored for this room
-    chatRoom.aggregate([
+    chatRooms.aggregate([
         { $match: { room: room } },
         { $unwind: '$messages' },
         { $sort: { timestamp: 1 } },
@@ -57,7 +57,7 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
 
         // Translation to the query:
         // Removes messages where the timestamp is in the 'messagesToBeRemoved' array
-        chatRoom.update({ room: room },
+        chatRooms.update({ room: room },
             { $pull: { messages: { timestamp: { $in: messagesToBeRemoved } } } }, (err) => {
                 if (err) {
                     return console.error(err);
@@ -72,7 +72,7 @@ module.exports.receiveChatMessage = (socket, room, message, senderId, senderName
         timestamp: messageTimestamp
     };
 
-    chatRoom.updateOne({ room: room },
+    chatRooms.updateOne({ room: room },
         { $push: { messages: message } },
         { upsert: true },
         (err, result) => {
@@ -111,7 +111,7 @@ module.exports.getLastMessages = (socket, room, lastMessageTime) => {
  * @param {function(err, result)} callback - called when the query is done executing.
  */
 function getLastMessages(room, lastMessageTime, messagesLimit, callback) {
-    mongo.db.collection('chatRoom').aggregate([
+    mongo.db.collection('chatRooms').aggregate([
         { $match: { room: room } },
         { $unwind: '$messages' },
         { $sort: { 'messages.timestamp': -1 } },
