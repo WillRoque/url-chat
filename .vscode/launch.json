@@ -5,6 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "env": {
+                "MONGODB_USER": "urlChatExtDebug",
+                "MONGODB_PASSWORD": "123456"
+            },
             "type": "node",
             "request": "launch",
             "name": "Launch Program",

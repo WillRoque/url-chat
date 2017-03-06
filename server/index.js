@@ -1,26 +1,10 @@
-var express = require('express');
-var http = require('http');
-var path = require('path');
+var httpServer = require('http').createServer();
+var io = require('socket.io')(httpServer);
 
 var mongo = require('./mongodb.js');
 var chat = require('./chat.js');
 var user = require('./user.js');
 
-var app = express();
-var httpServer = http.Server(app);
-var io = require('socket.io')(httpServer);
-
-/**
- * Sets the path to the files to be served to the client.
- */
-app.use(express.static(path.join(__dirname, '../public')));
-
-/**
- * Serves to the client the chat page.
- */
-app.get('/', (req, res) => {
-    res.sendFile('/index.html');
-});
 
 /**
  * The SocketIO methods used for the communication with the client.

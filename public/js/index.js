@@ -44,7 +44,7 @@ socketIO.on('typing', (user) => {
 
   var userTyping = document.createElement('li');
   userTyping.classList.add(user.id);
-  userTyping.innerHTML = user.name ? user.name : user.id;
+  userTyping.innerText = user.name ? user.name : user.id;
   usersTyping.appendChild(userTyping);
 
   if (usersTyping.childNodes.length === 1) {
@@ -220,7 +220,7 @@ function addMessage(message, sender, timestamp, prepend) {
 
     if (sender.name) {
       messageSenderId.classList.add('invisible');
-      messageSenderName.innerHTML = sender.name + ':';
+      messageSenderName.innerText = sender.name + ':';
     }
 
     messageSenderWrapper.appendChild(messageSenderId);
@@ -266,14 +266,14 @@ function getUserId() {
         userDiv.classList.add('pulsate');
       }
 
-      userDiv.innerHTML = user.name ? user.name : user.id;
+      userDiv.innerText = user.name ? user.name : user.id;
       document.getElementById('welcome-message').innerHTML = (user.name ? 'Hello ' : 'Hello user ') + userDiv.outerHTML;
       setUserDivClickable();
     } else {
       socketIO.emit('generateUserId', (newUserId) => {
         var userDiv = document.getElementById('user');
         userDiv.classList.add('pulsate');
-        userDiv.innerHTML = newUserId;
+        userDiv.innerText = newUserId;
         document.getElementById('welcome-message').innerHTML = 'Hello user ' + userDiv.outerHTML;
         setUserDivClickable();
 
@@ -298,7 +298,7 @@ function changeUserName(userId, userName) {
   if (user.id === userId) {
     var userDiv = document.getElementById('user');
     userDiv.classList.remove('pulsate');
-    userDiv.innerHTML = userName;
+    userDiv.innerText = userName;
     document.getElementById('welcome-message').innerHTML = 'Hello ' + userDiv.outerHTML;
     setUserDivClickable();
   }
@@ -310,7 +310,7 @@ function changeUserName(userId, userName) {
     if (senderIdDiv.innerHTML.startsWith(userId)) {
       senderIdDiv.classList.add('invisible');
       var senderNameDiv = sender.getElementsByClassName('message-sender-name')[0];
-      senderNameDiv.innerHTML = userName + ':';
+      senderNameDiv.innerText = userName + ':';
     }
   });
 }
