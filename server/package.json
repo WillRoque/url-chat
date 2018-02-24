@@ -4,7 +4,7 @@
   "description": "Chat with people in the same URL",
   "dependencies": {
     "mongodb": "^2.2.15",
-    "socket.io": "latest"
+    "socket.io": "1.7.3"
   },
   "scripts": {
     "start": "node index.js"
