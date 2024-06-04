@@ -1,8 +1,8 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
 
   "name": "url-chat",
-  "description": "Here you can talk to other people that are seeing the same URL that you are now",
+  "description": "Chat with people that are visiting the same URL as you!",
   "version": "1.0",
 
   "browser_action": {
