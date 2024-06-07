@@ -3,9 +3,9 @@
 
   "name": "url-chat",
   "description": "Chat with people that are visiting the same URL as you!",
-  "version": "1.0.2",
+  "version": "1.0.3",
 
-  "browser_action": {
+  "action": {
     "default_icon": "/img/chat_small.png",
     "default_popup": "/index.html",
     "default_title": "Click to open this URL's chat"
